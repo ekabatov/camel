@@ -10,7 +10,12 @@ import org.w3c.dom.NodeList;
 import javax.jms.*;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import java.io.ByteArrayInputStream;
+import java.io.StringWriter;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -41,11 +46,23 @@ public class Application {
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
             Document doc = dBuilder.parse(new ByteArrayInputStream(((TextMessage) msg).getText().getBytes("UTF-8")));
             doc.getDocumentElement().normalize();
-            NodeList nodeList = doc.getDocumentElement().getChildNodes();
+            NodeList nodeList = doc.getChildNodes().item(0).getChildNodes();
 //            System.out.println("Found " + doc.getDocumentElement().getElementsByTagName("CoordinateMessage"));
-            System.out.println("Found " + nodeList.item(0).getLocalName());
+            System.out.println("Found " + nodeList.item(11).getNodeName());
+//            System.out.println("Found " + );
+//            nodeList.item(1).setTextContent("login");
             System.out.println(msg.getJMSCorrelationID());
+            toString(doc);
         }
         con.stop();
+    }
+
+    private static void toString(Document newDoc) throws Exception{
+        DOMSource domSource = new DOMSource(newDoc);
+        Transformer transformer = TransformerFactory.newInstance().newTransformer();
+        StringWriter sw = new StringWriter();
+        StreamResult sr = new StreamResult(sw);
+        transformer.transform(domSource, sr);
+        System.out.println(sw.toString());
     }
 }
